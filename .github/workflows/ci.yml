@@ -59,11 +59,6 @@ jobs:
 
   docker_build:
     name: Docker Build
-    if: >-
-      github.event_name == 'pull_request' || github.ref == 'refs/heads/master'
-      || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/beta'
-      || github.ref == 'refs/heads/alpha'
-    needs: [test, lint]
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
@@ -103,7 +98,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish Docker image (branch)
-        if: steps.release.outputs.new_release_published == 'true'
+        if: >-
+          steps.release.outputs.new_release_published == 'true' && (github.ref
+          == 'refs/heads/master' || github.ref == 'refs/heads/beta' ||
+          github.ref == 'refs/heads/alpha')
         uses: docker/build-push-action@v1
         with:
           username: ${{ github.actor }}
@@ -113,7 +111,7 @@ jobs:
             ${{ github.repository }}/${{ github.event.repository.name }}
           tag_with_ref: true
 
-      - name: Publish Docker image (full versioned)
+      - name: Publish Docker image (versioned)
         if: steps.release.outputs.new_release_published == 'true'
         uses: docker/build-push-action@v1
         with:
@@ -122,17 +120,7 @@ jobs:
           registry: docker.pkg.github.com
           repository:
             ${{ github.repository }}/${{ github.event.repository.name }}
-          tags: ${{ steps.release.outputs.new_release_version }}
-
-      - name: Publish Docker image (minor versioned)
-        if: steps.release.outputs.new_release_published == 'true'
-        uses: docker/build-push-action@v1
-        with:
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-          registry: docker.pkg.github.com
-          repository:
-            ${{ github.repository }}/${{ github.event.repository.name }}
-          tags:
+          tags: >-
             ${{ steps.release.outputs.new_release_major_version }}.${{
-            steps.release.outputs.new_release_minor_version }}
+            steps.release.outputs.new_release_minor_version }},${{
+            steps.release.outputs.new_release_version }}
