@@ -11,12 +11,5 @@ module.exports = {
     ],
     '@semantic-release/git',
     '@semantic-release/github',
-    [
-      '@semantic-release/exec',
-      {
-        successCmd:
-          'echo "::set-output name=next_version::${nextRelease.version}"',
-      },
-    ],
   ],
 }
