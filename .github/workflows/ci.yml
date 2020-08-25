@@ -78,12 +78,14 @@ jobs:
           repository:
             ${{ github.repository }}/${{ github.event.repository.name }}
           tag_with_ref: true
-          push: ${{ github.event_name == 'push' }}
+          push:
+            ${{ github.event_name == 'push' && github.ref ==
+            'refs/heads/develop' }}
 
   release:
     name: Release
     if: github.event_name == 'push' && github.ref != 'refs/heads/develop'
-    needs: [test, lint]
+    needs: [test, lint, docker_build]
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
@@ -99,6 +101,17 @@ jobs:
             @semantic-release/git@^9.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish Docker image (branch)
+        if: steps.release.outputs.new_release_published == 'true'
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: docker.pkg.github.com
+          repository:
+            ${{ github.repository }}/${{ github.event.repository.name }}
+          tag_with_ref: true
 
       - name: Publish Docker image (full versioned)
         if: steps.release.outputs.new_release_published == 'true'
