@@ -101,7 +101,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish Docker image (full versioned)
-        if: steps.release.outputs.new_release_published
+        if: steps.release.outputs.new_release_published == 'true'
         uses: docker/build-push-action@v1
         with:
           username: ${{ github.actor }}
@@ -112,7 +112,7 @@ jobs:
           tags: ${{ steps.release.outputs.new_release_version }}
 
       - name: Publish Docker image (minor versioned)
-        if: steps.release.outputs.new_release_published
+        if: steps.release.outputs.new_release_published == 'true'
         uses: docker/build-push-action@v1
         with:
           username: ${{ github.actor }}
