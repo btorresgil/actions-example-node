@@ -114,4 +114,4 @@ jobs:
           registry: docker.pkg.github.com
           repository:
             ${{ github.repository }}/${{ github.event.repository.name }}
-          tags: ${{ steps.semantic_release.outputs.next_version }}
+          tags: v${{ steps.semantic_release.outputs.next_version }}
